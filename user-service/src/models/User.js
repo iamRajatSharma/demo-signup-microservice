@@ -1,3 +1,4 @@
+/* This JavaScript code is defining a Mongoose schema for a user in a MongoDB database. */
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({

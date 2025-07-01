@@ -1,9 +1,11 @@
 const User = require("../models/User");
 const { publishUserCreated } = require("../pubSub/publisher");
+const { registerUserSchema } = require("../validators/userValidator")
 
 exports.registerUser = async (req, res) => {
     try {
-        const { name, email, password } = req.body;
+        const validateRequest = registerUserSchema.parse(req.body)
+        const { name, email, password } = validateRequest;
 
         const existing = await User.findOne({ email });
         if (existing) return res.status(400).json({ message: "Email already exists" });
@@ -13,8 +15,11 @@ exports.registerUser = async (req, res) => {
         // Publish event
         await publishUserCreated(user);
 
-        res.status(201).json({ message: "User registered", user });
+        return res.status(201).json({ message: "User registered", user });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        if (error.name == "ZodError") {
+            return res.status(500).json(error);
+        }
+        return res.status(500).json({ error: error.message });
     }
 };
